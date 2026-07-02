@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 import mongoose from 'mongoose';
-import User, { IUser, UserRole, UserStatus } from '../models/User';
+import User, { UserRole, UserStatus } from '../models/User';
+import { IUser } from '../interfaces/IUser';
 import AppError from '../utils/AppError';
 import logger from '../config/logger';
 

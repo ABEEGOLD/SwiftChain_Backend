@@ -2,21 +2,17 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import routes from './routes';
-import logger from './config/logger';
-
-dotenv.config();
-
-const app = express();
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/swiftchain';
 import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
-import { connectDatabase } from './config/database';
+import routes from './routes';
+import logger from './config/logger';
+import env from './config/env';
+import { corsOptionsDelegate, helmetOptions } from './config/security';
 import errorHandler from './middleware/errorHandler';
 import requestLogger from './middleware/requestLogger';
-import routes from './routes';
-import env from './config/env';
+
+dotenv.config();
 
 const app = express();
 
@@ -24,13 +20,15 @@ const app = express();
 // secure headers and rate limiting use the correct client IP.
 app.set('trust proxy', 1);
 
+// Request logging
+app.use(requestLogger);
+
+// Security and compression
+app.use(helmet(helmetOptions));
+app.use(compression());
+
 // CORS configuration
-app.use(
-  cors({
-    origin: env.CORS_ORIGIN,
-    credentials: true,
-  }),
-);
+app.use(cors(corsOptionsDelegate));
 
 // Rate limiting
 const limiter = rateLimit({
@@ -45,15 +43,14 @@ app.use('/api', limiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-app.use(cors());
-app.use(express.json());
+app.use('/api/v1', routes);
 
-app.use('/api', routes);
-
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.status(200).json({
-    status: 'healthy',
+    status: 'success',
+    message: 'SwiftChain-Backend is running',
     timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
     mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
   });
 });
@@ -65,18 +62,6 @@ app.use((req, res) => {
   });
 });
 
-// Connect to MongoDB but don't start the server here
-const connectDB = async () => {
-  try {
-    await mongoose.connect(MONGODB_URI);
-    logger.info('✅ Connected to MongoDB');
-  } catch (error) {
-    logger.error('❌ Failed to connect to MongoDB:', error);
-    process.exit(1);
-  }
-};
-
-// Call connectDB but don't listen
-connectDB();
+app.use(errorHandler);
 
 export default app;

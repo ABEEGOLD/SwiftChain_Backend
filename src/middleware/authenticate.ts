@@ -1,8 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { StatusCodes } from 'http-status-codes';
-import User, { IUser } from '../models/User';
+import User, { UserRole, UserStatus } from '../models/User';
+import { IUser } from '../interfaces/IUser';
 import AppError from '../utils/AppError';
+import env from '../config/env';
 
 // ─── Augment Express Request ───────────────────────────────────────────────────
 
@@ -52,7 +54,7 @@ const authenticate = async (
     const token = authHeader.split(' ')[1];
 
     // 2. Verify and decode the JWT
-    const secret = process.env.JWT_SECRET;
+    const secret = env.JWT_SECRET;
     if (!secret) {
       throw new AppError('Server misconfiguration: JWT secret not set.', StatusCodes.INTERNAL_SERVER_ERROR);
     }

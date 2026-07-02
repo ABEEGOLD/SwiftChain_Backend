@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import httpStatus from 'http-status-codes';
-import { DeliveryStatus } from '../models/Delivery';
+import { DeliveryStatus } from '../models/deliveryModel';
 import {
   deliveryService,
   CreateDeliveryInput,
@@ -8,9 +8,6 @@ import {
   DeliveryFilter,
 } from '../services/delivery.service';
 
-interface AuthenticatedRequest extends Request {
-  user?: { id: string };
-}
 
 export class DeliveryController {
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -51,7 +48,8 @@ export class DeliveryController {
   async list(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const statusParam = req.query.status as string | undefined;
-      const validatedStatus = Object.values(DeliveryStatus).includes(statusParam as DeliveryStatus)
+      const VALID_STATUSES: DeliveryStatus[] = ['pending', 'assigned', 'picked_up', 'in_transit', 'delivered'];
+      const validatedStatus = VALID_STATUSES.includes(statusParam as DeliveryStatus)
         ? (statusParam as DeliveryStatus)
         : undefined;
 
@@ -102,7 +100,7 @@ export class DeliveryController {
 
   async archive(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const userId = (req as AuthenticatedRequest).user?.id;
+      const userId = req.user?.id;
       const delivery = await deliveryService.archive(req.params.id, userId);
       res.status(httpStatus.OK).json({
         status: 'success',

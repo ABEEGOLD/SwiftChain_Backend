@@ -2,7 +2,7 @@ import request from 'supertest';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import app from '../src/app';
-import Delivery from '../src/models/Delivery';
+import { Delivery } from '../src/models/Delivery';
 
 jest.mock('../src/config/database', () => ({
   connectDatabase: jest.fn(),

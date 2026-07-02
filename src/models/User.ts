@@ -1,6 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
-import { IUser, UserRole } from '../interfaces/IUser';
+import { IUser, UserRole, UserStatus } from '../interfaces/IUser';
 
 const userSchema = new Schema<IUser>(
   {
@@ -39,10 +39,24 @@ const userSchema = new Schema<IUser>(
       type: Boolean,
       default: true,
     },
+    status: {
+      type: String,
+      enum: Object.values(UserStatus),
+      default: UserStatus.ACTIVE,
+    },
+    suspendedAt: {
+      type: Date,
+    },
+    suspendedReason: {
+      type: String,
+      trim: true,
+      maxlength: [500, 'Suspension reason cannot exceed 500 characters'],
+    },
   },
   {
     timestamps: true,
     toJSON: {
+      virtuals: true,
       transform(_doc, ret): any {
         ret.id = ret._id;
         delete ret._id;
@@ -51,8 +65,25 @@ const userSchema = new Schema<IUser>(
         return ret;
       },
     },
+    toObject: {
+      virtuals: true,
+    },
   },
 );
+
+userSchema.virtual('name')
+  .get(function () {
+    const firstName = this.get('firstName') || '';
+    const lastName = this.get('lastName') || '';
+    return `${firstName}${lastName ? ` ${lastName}` : ''}`.trim();
+  })
+  .set(function (name: string) {
+    const [firstName, ...rest] = name.trim().split(/\s+/);
+    const lastName = rest.join(' ');
+
+    this.set('firstName', firstName || '');
+    this.set('lastName', lastName || '');
+  });
 
 // Hash password before saving
 userSchema.pre('save', async function (next) {
@@ -81,3 +112,4 @@ userSchema.index({ email: 1 });
 const User = mongoose.model<IUser>('User', userSchema);
 
 export default User;
+export { UserRole, UserStatus };

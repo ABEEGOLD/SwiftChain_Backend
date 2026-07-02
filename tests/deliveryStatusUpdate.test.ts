@@ -35,7 +35,7 @@ describe('Delivery Status Update API', () => {
     await mongoose.connection.dropDatabase();
     await mongoose.disconnect();
     await mongoServer.stop();
-  });
+  }, 30000);
 
   afterEach(async () => {
     await Delivery.deleteMany({});

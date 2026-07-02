@@ -1,27 +1,35 @@
 import http from 'http';
 import app from './app';
+import env from './config/env';
 import logger from './config/logger';
-import { initializeSocketServer, shutdownSocketServer, TypedServer } from './sockets/connectionHandler';
+import { initializeSocketServer, shutdownSocketServer } from './sockets/connectionHandler';
+import { connectDatabase } from './config/database';
 
 const PORT = env.PORT;
+const httpServer = http.createServer(app);
+const io = initializeSocketServer(httpServer);
 
-// Start the server from here
-const server = app.listen(PORT, () => {
-  logger.info(`🚀 Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
-  logger.info(`📝 Health check: http://localhost:${PORT}/health`);
-  logger.info(`📦 ETA endpoint: http://localhost:${PORT}/api/v1/deliveries/:id/eta`);
+const startServer = async (): Promise<void> => {
+  await connectDatabase();
+
+  httpServer.listen(PORT, () => {
+    logger.info(`🚀 Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
+    logger.info(`📝 Health check: http://localhost:${PORT}/health`);
+    logger.info(`📦 ETA endpoint: http://localhost:${PORT}/api/v1/deliveries/:id/eta`);
+  });
+};
+
+startServer().catch((error) => {
+  logger.error('Failed to start server:', error);
+  process.exit(1);
 });
-
-// ─── Graceful shutdown ────────────────────────────────────────────────────────
 
 const gracefulShutdown = async (): Promise<void> => {
   logger.info('Received shutdown signal, closing gracefully...');
 
   try {
-    // 1. Stop accepting new WebSocket connections and close existing ones
     await shutdownSocketServer(io);
 
-    // 2. Stop accepting new HTTP requests
     httpServer.close(async () => {
       logger.info('HTTP server closed');
 
@@ -40,7 +48,6 @@ const gracefulShutdown = async (): Promise<void> => {
     process.exit(1);
   }
 
-  // Force close after 10 seconds
   setTimeout(() => {
     logger.error('Could not close connections in time, forcefully shutting down');
     process.exit(1);
