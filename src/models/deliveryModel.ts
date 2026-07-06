@@ -1,4 +1,4 @@
-import { Document, model, Schema } from 'mongoose';
+import mongoose, { Document, model, Schema } from 'mongoose';
 
 export type DeliveryStatus = 'pending' | 'assigned' | 'picked_up' | 'in_transit' | 'delivered';
 
@@ -32,4 +32,4 @@ const deliverySchema = new Schema<DeliveryDocument>(
   },
 );
 
-export const Delivery = model<DeliveryDocument>('Delivery', deliverySchema);
+export const Delivery = (require("mongoose").models.Delivery || model<DeliveryDocument>("Delivery", deliverySchema));

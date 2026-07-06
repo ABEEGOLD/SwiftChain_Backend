@@ -11,8 +11,14 @@ import env from './config/env';
 import { corsOptionsDelegate, helmetOptions } from './config/security';
 import errorHandler from './middleware/errorHandler';
 import requestLogger from './middleware/requestLogger';
-
 dotenv.config();
+
+if (process.env.MONGODB_URI && require('mongoose').connection.readyState === 0) {
+  require('mongoose').connect(process.env.MONGODB_URI).catch(console.error);
+
+}
+
+
 
 const app = express();
 

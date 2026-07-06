@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import logger from '../config/logger';
 import AppError from '../utils/AppError';
+import { HttpError } from '../utils/httpError';
 import { CorsNotAllowedError } from '../config/security';
 
 interface MongooseValidationError extends Error {
@@ -19,7 +20,14 @@ const errorHandler = (err: Error, req: Request, res: Response, _next: NextFuncti
   let errors: Array<{ field: string; message: string }> | undefined;
 
   // Custom application errors
-  if (err instanceof AppError) {
+  if ((err as any).statusCode && err.constructor.name === 'HttpError') {
+    statusCode = (err as any).statusCode;
+    message = err.message;
+  } else
+  if (err instanceof HttpError) {
+    statusCode = err.statusCode;
+    message = err.message;
+  } else if (err instanceof AppError) {
     statusCode = err.statusCode;
     message = err.message;
   }

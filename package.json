@@ -13,7 +13,7 @@
     "seed": "ts-node src/seed.ts",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write .",
-    "test": "jest",
+    "test": "jest --forceExit",
     "prepare": "husky install"
   },
   "dependencies": {
@@ -50,7 +50,6 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
     "husky": "8.0.3",
-    "jest": "^30.4.2",
     "lint-staged": "15.2.0",
     "mongodb-memory-server": "9.1.6",
     "nodemon": "3.0.2",

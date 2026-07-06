@@ -41,7 +41,7 @@ const env: EnvConfig = {
   NODE_ENV: getEnvVar('NODE_ENV', 'development'),
   PORT: parseInt(getEnvVar('PORT', '3000'), 10),
   MONGODB_URI: getEnvVar('MONGODB_URI', 'mongodb://localhost:27017/swiftchain'),
-  JWT_SECRET: getEnvVar('JWT_SECRET', isTest ? 'test-jwt-secret' : undefined),
+  JWT_SECRET: getEnvVar('JWT_SECRET', isTest ? 'test-secret-key' : undefined),
   JWT_EXPIRES_IN: getEnvVar('JWT_EXPIRES_IN', '7d'),
   BCRYPT_ROUNDS: parseInt(getEnvVar('BCRYPT_ROUNDS', '10'), 10),
   LOG_LEVEL: getEnvVar('LOG_LEVEL', 'debug'),

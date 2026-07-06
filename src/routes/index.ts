@@ -2,16 +2,13 @@ import { Router } from 'express';
 import authRoutes from './authRoutes';
 import adminRoutes from './adminRoutes';
 import deliveriesRoutes from './deliveries';
+import deliveryStatusRoutes from './deliveryStatus';
 
 const router = Router();
 
-// Auth routes
 router.use('/auth', authRoutes);
-
-// Admin routes
 router.use('/admin', adminRoutes);
-
-// Delivery routes
 router.use('/deliveries', deliveriesRoutes);
+router.use('/deliveries', deliveryStatusRoutes);
 
 export default router;
